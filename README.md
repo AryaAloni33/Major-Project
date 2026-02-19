@@ -1,73 +1,89 @@
-# Welcome to your Lovable project
+# SpinoAid
 
-## Project info
+## 📌 Prerequisites (Install these first)
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Before running the project, install:
 
-## How can I edit this code?
+### 1) Install Node.js (includes npm)
 
-There are several ways of editing your application.
+Download and install from:
+https://nodejs.org
 
-**Use Lovable**
+After installation, verify:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+```bash
+node -v
+npm -v
+```
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+### 2) Install Git (optional, for cloning)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Download from:
+https://git-scm.com
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Check installation:
 
-Follow these steps:
+```bash
+git --version
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 🚀 How to Run the Project
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 1️⃣ Clone the repository
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+git clone https://github.com/AryaAloni33/Major-Project.git
+cd Major-Project
+```
+
+Or download ZIP from GitHub and extract it.
+
+---
+
+### 2️⃣ Start the Frontend
+
+```bash
+cd frontend
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Open in browser:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+http://localhost:5173
+```
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 3️⃣ Start the Backend (if required)
 
-## What technologies are used for this project?
+Open a new terminal:
 
-This project is built with:
+```bash
+cd backend
+# install backend dependencies (if any)
+# run backend server (command depends on backend)
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## 🛠️ Build for Production
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+```bash
+cd frontend
+npm run build
+```
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## 📄 Notes
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+* Make sure Node.js is installed before running commands
+* Run frontend and backend in separate terminals
+* Ports may vary depending on configuration
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
