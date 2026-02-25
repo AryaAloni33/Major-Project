@@ -3,13 +3,23 @@ import type { Annotation } from "./ImageCanvas";
 
 interface ShapeDimensionsProps {
   selectedAnnotation: Annotation | null;
+  onLabelChange?: (id: string, newLabel: string) => void;
 }
 
-const ShapeDimensions = ({ selectedAnnotation }: ShapeDimensionsProps) => {
+const DimensionRow = ({ label, value, unit = "px" }: { label: string; value: string; unit?: string; key?: string }) => (
+  <div className="flex items-center justify-between py-1.5 px-2 rounded bg-muted/50">
+    <span className="text-xs font-medium text-muted-foreground">{label}</span>
+    <span className="text-xs font-mono text-foreground">
+      {value}<span className="text-muted-foreground ml-0.5">{unit}</span>
+    </span>
+  </div>
+);
+
+const ShapeDimensions = ({ selectedAnnotation, onLabelChange }: ShapeDimensionsProps) => {
   if (!selectedAnnotation) {
     return (
-      <aside className="w-56 bg-card border-l border-border flex flex-col shadow-sm">
-        <div className="p-3 border-b border-border bg-muted/30">
+      <div className="flex flex-col border-b border-border bg-card/50">
+        <div className="p-3 bg-muted/30">
           <h2 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
             <Ruler className="h-4 w-4 text-muted-foreground" />
             Shape Dimensions
@@ -22,12 +32,12 @@ const ShapeDimensions = ({ selectedAnnotation }: ShapeDimensionsProps) => {
             Draw or select a shape to see its dimensions.
           </p>
         </div>
-      </aside>
+      </div>
     );
   }
 
   const { type, points } = selectedAnnotation;
-  
+
   // Calculate dimensions based on annotation type
   const getDimensions = () => {
     switch (type) {
@@ -38,7 +48,6 @@ const ShapeDimensions = ({ selectedAnnotation }: ShapeDimensionsProps) => {
         return {
           width: boxWidth.toFixed(1),
           height: boxHeight.toFixed(1),
-          area: (boxWidth * boxHeight).toFixed(1),
         };
 
       case "circle":
@@ -51,7 +60,6 @@ const ShapeDimensions = ({ selectedAnnotation }: ShapeDimensionsProps) => {
         return {
           radius: radius.toFixed(1),
           diameter: diameter.toFixed(1),
-          area: (Math.PI * radius * radius).toFixed(1),
         };
 
       case "ellipse":
@@ -61,7 +69,6 @@ const ShapeDimensions = ({ selectedAnnotation }: ShapeDimensionsProps) => {
         return {
           width: (rx * 2).toFixed(1),
           height: (ry * 2).toFixed(1),
-          area: (Math.PI * rx * ry).toFixed(1),
         };
 
       case "line":
@@ -132,8 +139,8 @@ const ShapeDimensions = ({ selectedAnnotation }: ShapeDimensionsProps) => {
 
   if (!dimensions) {
     return (
-      <aside className="w-56 bg-card border-l border-border flex flex-col shadow-sm">
-        <div className="p-3 border-b border-border bg-muted/30">
+      <div className="flex flex-col border-b border-border bg-card/50">
+        <div className="p-3 bg-muted/30">
           <h2 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
             <Ruler className="h-4 w-4 text-muted-foreground" />
             Shape Dimensions
@@ -142,22 +149,13 @@ const ShapeDimensions = ({ selectedAnnotation }: ShapeDimensionsProps) => {
         <div className="flex-1 p-4">
           <p className="text-xs text-muted-foreground">Unable to calculate dimensions.</p>
         </div>
-      </aside>
+      </div>
     );
   }
 
-  const DimensionRow = ({ label, value, unit = "px" }: { label: string; value: string; unit?: string }) => (
-    <div className="flex items-center justify-between py-1.5 px-2 rounded bg-muted/50">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <span className="text-xs font-mono text-foreground">
-        {value}<span className="text-muted-foreground ml-0.5">{unit}</span>
-      </span>
-    </div>
-  );
-
   return (
-    <aside className="w-56 bg-card border-l border-border flex flex-col shadow-sm">
-      <div className="p-3 border-b border-border bg-muted/30">
+    <div className="flex flex-col border-b border-border">
+      <div className="p-3 bg-muted/30">
         <h2 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
           <Ruler className="h-4 w-4 text-muted-foreground" />
           Shape Dimensions
@@ -169,18 +167,32 @@ const ShapeDimensions = ({ selectedAnnotation }: ShapeDimensionsProps) => {
         {Object.entries(dimensions).map(([key, value]) => {
           let label = key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
           let unit = "px";
-          
+
           if (key === "angle") unit = "°";
-          else if (key === "area") unit = "px²";
           else if (key === "pointCount") {
             label = "Points";
             unit = "";
           }
-          
+
           return <DimensionRow key={key} label={label} value={value} unit={unit} />;
         })}
+
+        <div className="mt-3 flex flex-col gap-1.5 py-1.5 px-2 rounded bg-primary/5 border border-primary/10">
+          <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Shape Label</span>
+          <input
+            type="text"
+            value={selectedAnnotation.label || ""}
+            onChange={(e) => {
+              if (onLabelChange) {
+                onLabelChange(selectedAnnotation.id, e.target.value);
+              }
+            }}
+            className="bg-transparent border-none text-xs font-bold text-primary focus:outline-none p-0 w-full"
+            placeholder="No Label"
+          />
+        </div>
       </div>
-    </aside>
+    </div>
   );
 };
 

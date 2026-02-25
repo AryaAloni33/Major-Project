@@ -2,19 +2,15 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Sun, Contrast, Droplets, Palette, CircleDot } from "lucide-react";
+import { RotateCcw, Sun, Contrast, CircleDot } from "lucide-react";
 
 interface ImageAdjustmentsProps {
   brightness: number;
   contrast: number;
-  saturation: number;
-  hue: number;
   gamma: number;
   invert: boolean;
   onBrightnessChange: (value: number) => void;
   onContrastChange: (value: number) => void;
-  onSaturationChange: (value: number) => void;
-  onHueChange: (value: number) => void;
   onGammaChange: (value: number) => void;
   onInvertChange: (value: boolean) => void;
   onReset: () => void;
@@ -24,23 +20,19 @@ interface ImageAdjustmentsProps {
 const ImageAdjustments = ({
   brightness,
   contrast,
-  saturation,
-  hue,
   gamma,
   invert,
   onBrightnessChange,
   onContrastChange,
-  onSaturationChange,
-  onHueChange,
   onGammaChange,
   onInvertChange,
   onReset,
   hasImage,
 }: ImageAdjustmentsProps) => {
   return (
-    <div className="w-56 bg-card border-l border-border flex flex-col shadow-sm">
+    <div className="flex flex-col border-b border-border">
       {/* Header */}
-      <div className="p-3 border-b border-border bg-muted/30">
+      <div className="p-3 bg-muted/30">
         <h2 className="text-sm font-semibold text-foreground">Image Adjustments</h2>
         <p className="text-[11px] text-muted-foreground mt-0.5">Enhance X-Ray clarity</p>
       </div>
@@ -113,49 +105,6 @@ const ImageAdjustments = ({
           />
         </div>
 
-        {/* Saturation */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-medium flex items-center gap-1.5">
-              <Droplets className="h-3.5 w-3.5 text-muted-foreground" />
-              Saturation
-            </Label>
-            <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-              {saturation}%
-            </span>
-          </div>
-          <Slider
-            value={[saturation]}
-            onValueChange={(v) => onSaturationChange(v[0])}
-            min={0}
-            max={200}
-            step={1}
-            disabled={!hasImage}
-            className="cursor-pointer"
-          />
-        </div>
-
-        {/* Hue Rotate */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-medium flex items-center gap-1.5">
-              <Palette className="h-3.5 w-3.5 text-muted-foreground" />
-              Hue Rotate
-            </Label>
-            <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-              {hue}°
-            </span>
-          </div>
-          <Slider
-            value={[hue]}
-            onValueChange={(v) => onHueChange(v[0])}
-            min={0}
-            max={360}
-            step={1}
-            disabled={!hasImage}
-            className="cursor-pointer"
-          />
-        </div>
 
         {/* Invert Toggle */}
         <div className="flex items-center justify-between py-2 px-1 rounded-lg bg-muted/50">

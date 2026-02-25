@@ -1,17 +1,14 @@
-import { 
-  Upload, 
-  Square, 
-  Pencil, 
-  Circle, 
-  Type, 
-  Eraser, 
-  Undo2, 
-  Redo2, 
+import {
+  Upload,
+  Square,
+  Pencil,
+  Circle,
+  Type,
+  Eraser,
+  Undo2,
+  Redo2,
   Save,
   MousePointer2,
-  ZoomIn,
-  ZoomOut,
-  Move,
   RotateCcw,
   Ruler,
   Slash,
@@ -21,31 +18,27 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type AnnotationTool = 
-  | "select" 
+export type AnnotationTool =
+  | "select"
   | "marker"
-  | "box" 
-  | "freehand" 
-  | "circle" 
+  | "box"
+  | "freehand"
+  | "circle"
   | "ellipse"
   | "line"
   | "ruler"
   | "angle"
-  | "text" 
+  | "text"
   | "eraser";
 
 interface AnnotationToolbarProps {
   activeTool: AnnotationTool;
   onToolChange: (tool: AnnotationTool) => void;
   onUpload: () => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onPan: () => void;
   onUndo: () => void;
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
-  isPanning: boolean;
   hasImage: boolean;
 }
 
@@ -77,8 +70,8 @@ const ToolItem = ({ icon: Icon, label, shortcut, isActive, disabled, onClick }: 
     {shortcut && (
       <span className={cn(
         "text-[10px] font-mono px-1.5 py-0.5 rounded",
-        isActive 
-          ? "bg-primary-foreground/20 text-primary-foreground" 
+        isActive
+          ? "bg-primary-foreground/20 text-primary-foreground"
           : "bg-muted text-muted-foreground"
       )}>
         {shortcut}
@@ -101,14 +94,10 @@ const AnnotationToolbar = ({
   activeTool,
   onToolChange,
   onUpload,
-  onZoomIn,
-  onZoomOut,
-  onPan,
   onUndo,
   onRedo,
   canUndo,
   canRedo,
-  isPanning,
   hasImage,
 }: AnnotationToolbarProps) => {
   const selectionTools = [
@@ -155,54 +144,6 @@ const AnnotationToolbar = ({
         </button>
       </div>
 
-      <Divider />
-
-      {/* View Controls */}
-      <div>
-        <SectionHeader>View</SectionHeader>
-        <div className="px-2 pb-2 grid grid-cols-3 gap-1">
-          <button
-            onClick={onZoomIn}
-            disabled={!hasImage}
-            className={cn(
-              "flex flex-col items-center justify-center p-2 rounded-md",
-              "bg-secondary/50 text-secondary-foreground hover:bg-secondary",
-              "transition-all duration-200 focus-ring disabled:opacity-40"
-            )}
-            title="Zoom In (+)"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </button>
-          <button
-            onClick={onZoomOut}
-            disabled={!hasImage}
-            className={cn(
-              "flex flex-col items-center justify-center p-2 rounded-md",
-              "bg-secondary/50 text-secondary-foreground hover:bg-secondary",
-              "transition-all duration-200 focus-ring disabled:opacity-40"
-            )}
-            title="Zoom Out (-)"
-          >
-            <ZoomOut className="h-4 w-4" />
-          </button>
-          <button
-            onClick={onPan}
-            disabled={!hasImage}
-            className={cn(
-              "flex flex-col items-center justify-center p-2 rounded-md",
-              "transition-all duration-200 focus-ring disabled:opacity-40",
-              isPanning
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary/50 text-secondary-foreground hover:bg-secondary"
-            )}
-            title="Pan (Space + Drag)"
-          >
-            <Move className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      <Divider />
 
       {/* Selection & Eraser */}
       <div>

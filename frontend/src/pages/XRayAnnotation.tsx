@@ -5,6 +5,7 @@ import { AnnotationToolbar, type AnnotationTool } from "@/components/xray/Annota
 import { ImageCanvas, type Annotation } from "@/components/xray/ImageCanvas";
 import { ImageAdjustments } from "@/components/xray/ImageAdjustments";
 import { ShapeDimensions } from "@/components/xray/ShapeDimensions";
+import { AnnotationList } from "@/components/xray/AnnotationList";
 import { MedicalButton } from "@/components/medical/MedicalButton";
 import { useTheme } from "@/components/ThemeProvider";
 import { toast } from "@/hooks/use-toast";
@@ -67,8 +68,6 @@ const XRayAnnotation = () => {
   const [filters, setFilters] = useState({
     brightness: 100,
     contrast: 100,
-    saturation: 100,
-    hue: 0,
     gamma: 100,
     invert: false,
   });
@@ -77,8 +76,6 @@ const XRayAnnotation = () => {
     setFilters({
       brightness: 100,
       contrast: 100,
-      saturation: 100,
-      hue: 0,
       gamma: 100,
       invert: false,
     });
@@ -275,8 +272,47 @@ const XRayAnnotation = () => {
     }
   }, [historyIndex, history]);
 
+  const handleDeleteAnnotation = useCallback((id: string) => {
+    setAnnotations((prev) => {
+      const filtered = prev.filter((a) => a.id !== id);
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push(filtered);
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+      return filtered;
+    });
+    if (selectedAnnotation === id) {
+      setSelectedAnnotation(null);
+    }
+  }, [history, historyIndex, selectedAnnotation]);
+
+  const handleLabelChange = useCallback((id: string, newLabel: string) => {
+    setAnnotations((prev) =>
+      prev.map((ann) => ann.id === id ? { ...ann, label: newLabel } : ann)
+    );
+  }, []);
+
+  const handleToggleLock = useCallback((id: string) => {
+    setAnnotations((prev) => {
+      const updated = prev.map((ann) => ann.id === id ? { ...ann, locked: !ann.locked } : ann);
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push(updated);
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+      return updated;
+    });
+  }, [history, historyIndex]);
+
   const handleSave = useCallback(async () => {
     if (!imageSrc) return;
+    if (!patientId) {
+      toast({
+        title: "No patient selected",
+        description: "Please start the annotation from a patient's details page to save records correctly.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       await annotationsApi.save({
@@ -290,12 +326,13 @@ const XRayAnnotation = () => {
         title: "Annotations saved",
         description: `${annotations.length} annotation(s) saved for ${imageName}.`,
       });
-      // Optionally navigate to view page to see the saved record
-      navigate("/view");
-    } catch {
+      // Pass the patientId to correctly focus the view page
+      navigate("/view", { state: { patientId } });
+    } catch (err) {
+      const isQuotaError = err instanceof Error && (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED');
       toast({
         title: "Error",
-        description: "Failed to save annotations.",
+        description: isQuotaError ? "Storage full. Try using a smaller image." : "Failed to save annotations to local storage.",
         variant: "destructive"
       });
     }
@@ -371,14 +408,10 @@ const XRayAnnotation = () => {
           activeTool={activeTool}
           onToolChange={handleToolChange}
           onUpload={handleUpload}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-          onPan={handlePanToggle}
           onUndo={handleUndo}
           onRedo={handleRedo}
           canUndo={historyIndex > 0}
           canRedo={historyIndex < history.length - 1}
-          isPanning={isPanning}
           hasImage={!!imageSrc}
         />
 
@@ -396,28 +429,44 @@ const XRayAnnotation = () => {
           onZoomChange={handleWheelZoom}
           selectedAnnotation={selectedAnnotation}
           onSelectedAnnotationChange={setSelectedAnnotation}
+          onToolChange={handleToolChange}
         />
 
-        {/* Right Panel - Image Adjustments + Shape Dimensions */}
-        <div className="flex flex-col h-full shrink-0">
+        {/* Right Panel - Image Adjustments + Shape Dimensions + Annotation Labels */}
+        <aside className="w-56 bg-card border-l border-border flex flex-col shadow-sm shrink-0 h-full overflow-hidden">
           <ImageAdjustments
             brightness={filters.brightness}
             contrast={filters.contrast}
-            saturation={filters.saturation}
-            hue={filters.hue}
             gamma={filters.gamma}
             invert={filters.invert}
             onBrightnessChange={(v) => setFilters((f) => ({ ...f, brightness: v }))}
             onContrastChange={(v) => setFilters((f) => ({ ...f, contrast: v }))}
-            onSaturationChange={(v) => setFilters((f) => ({ ...f, saturation: v }))}
-            onHueChange={(v) => setFilters((f) => ({ ...f, hue: v }))}
             onGammaChange={(v) => setFilters((f) => ({ ...f, gamma: v }))}
             onInvertChange={(v) => setFilters((f) => ({ ...f, invert: v }))}
-            onReset={resetFilters}
+            onReset={() =>
+              setFilters({
+                brightness: 100,
+                contrast: 100,
+                gamma: 100,
+                invert: false,
+              })
+            }
             hasImage={!!imageSrc}
           />
-          <ShapeDimensions selectedAnnotation={getSelectedAnnotationObject()} />
-        </div>
+
+          <ShapeDimensions
+            selectedAnnotation={getSelectedAnnotationObject()}
+            onLabelChange={handleLabelChange}
+          />
+
+          <AnnotationList
+            annotations={annotations}
+            selectedAnnotation={selectedAnnotation}
+            onSelect={setSelectedAnnotation}
+            onDelete={handleDeleteAnnotation}
+            onToggleLock={handleToggleLock}
+          />
+        </aside>
       </div>
 
       {/* Status Bar */}

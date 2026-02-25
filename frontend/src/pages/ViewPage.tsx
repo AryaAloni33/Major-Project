@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { MedicalCard, MedicalCardHeader, MedicalCardTitle, MedicalCardContent } from "@/components/medical/MedicalCard";
 import { MedicalButton } from "@/components/medical/MedicalButton";
@@ -18,10 +18,12 @@ interface AnnotationRecord {
   annotations: any[];
   created_at: string;
   updated_at?: string;
+  locked?: boolean;
 }
 
 export default function ViewPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
@@ -32,10 +34,17 @@ export default function ViewPage() {
 
   useEffect(() => {
     patientsApi.list().then((res) => {
-      setPatients(res.data.patients);
+      const pts = res.data.patients;
+      setPatients(pts);
       setLoading(false);
+
+      // Auto-select patient from location state if available
+      const locationState = location.state as { patientId?: string } | null;
+      if (locationState?.patientId) {
+        setSelectedPatient(locationState.patientId);
+      }
     }).catch(() => setLoading(false));
-  }, []);
+  }, [location]);
 
   useEffect(() => {
     if (selectedPatient) {
@@ -98,13 +107,31 @@ export default function ViewPage() {
           </g>
         );
 
-      case 'circle':
+      case 'circle': {
         if (ann.points?.length < 2) return null;
-        const [c, e] = ann.points;
-        const r = Math.sqrt(Math.pow(e.x - c.x, 2) + Math.pow(e.y - c.y, 2));
+        const [c0, c1] = ann.points;
+        const cx = (c0.x + c1.x) / 2;
+        const cy = (c0.y + c1.y) / 2;
+        const r = Math.max(Math.abs(c1.x - c0.x), Math.abs(c1.y - c0.y)) / 2;
         return (
-          <circle key={ann.id} cx={c.x} cy={c.y} r={r} fill={`${color}15`} stroke={color} strokeWidth="3" />
+          <g key={ann.id}>
+            <circle cx={cx} cy={cy} r={r} fill={`${color}15`} stroke={color} strokeWidth="3" />
+            {ann.locked && <path d={`M ${cx - 6} ${cy - 6} h 12 v 12 h -12 z`} fill="none" stroke="white" strokeWidth="1" />}
+          </g>
         );
+      }
+
+      case 'ellipse': {
+        if (ann.points?.length < 2) return null;
+        const [e0, e1] = ann.points;
+        const ex = (e0.x + e1.x) / 2;
+        const ey = (e0.y + e1.y) / 2;
+        const rx = Math.abs(e1.x - e0.x) / 2;
+        const ry = Math.abs(e1.y - e0.y) / 2;
+        return (
+          <ellipse key={ann.id} cx={ex} cy={ey} rx={rx} ry={ry} fill={`${color}15`} stroke={color} strokeWidth="3" />
+        );
+      }
 
       case 'line':
       case 'ruler':
@@ -114,16 +141,23 @@ export default function ViewPage() {
           <line key={ann.id} x1={l0.x} y1={l0.y} x2={l1.x} y2={l1.y} stroke={color} strokeWidth="3" />
         );
 
-      case 'angle':
+      case 'angle': {
         if (ann.points?.length < 3) return null;
-        const [a0, a1, a2] = ann.points;
+        const [a0, v, a2] = ann.points;
+        const ang = (Math.atan2(a0.y - v.y, a0.x - v.x) - Math.atan2(a2.y - v.y, a2.x - v.x)) * (180 / Math.PI);
+        const absAng = Math.abs(ang > 180 ? 360 - ang : ang);
+
         return (
-          <path
-            key={ann.id}
-            d={`M ${a0.x} ${a0.y} L ${a1.x} ${a1.y} L ${a2.x} ${a2.y}`}
-            fill="none" stroke={color} strokeWidth="3"
-          />
+          <g key={ann.id}>
+            <path
+              d={`M ${a0.x} ${a0.y} L ${v.x} ${v.y} L ${a2.x} ${a2.y}`}
+              fill="none" stroke={color} strokeWidth="3"
+            />
+            <circle cx={v.x} cy={v.y} r="4" fill={color} />
+            <text x={v.x + 15} y={v.y - 15} fill={color} className="text-[14px] font-bold select-none bg-black/50">{absAng.toFixed(1)}°</text>
+          </g>
         );
+      }
 
       case 'freehand':
         if (ann.points?.length < 2) return null;
@@ -147,6 +181,45 @@ export default function ViewPage() {
       default:
         return null;
     }
+  };
+
+  const renderLabel = (ann: any) => {
+    if (!ann.label) return null;
+
+    // Calculate bounding box for label placement
+    let maxX = -Infinity, minY = Infinity;
+    if (ann.points) {
+      ann.points.forEach((p: any) => {
+        maxX = Math.max(maxX, p.x);
+        minY = Math.min(minY, p.y);
+      });
+    }
+
+    if (maxX === -Infinity) return null;
+
+    return (
+      <g key={`${ann.id}-label`}>
+        <rect
+          x={maxX + 10}
+          y={minY}
+          width={ann.label.length * 8 + 12}
+          height={20}
+          fill={ann.color || "#22c55e"}
+          rx="4"
+          opacity="0.9"
+        />
+        <text
+          x={maxX + 16}
+          y={minY + 14}
+          fill="white"
+          fontSize="11"
+          fontWeight="bold"
+          fontFamily="sans-serif"
+        >
+          {ann.label}
+        </text>
+      </g>
+    );
   };
 
   return (
@@ -308,7 +381,12 @@ export default function ViewPage() {
                       className="absolute inset-0 w-full h-full pointer-events-none"
                       style={{ overflow: "visible" }}
                     >
-                      {selectedRecord.annotations.map((ann: any) => renderAnnotation(ann))}
+                      {selectedRecord.annotations.map((ann: any) => (
+                        <g key={ann.id}>
+                          {renderAnnotation(ann)}
+                          {renderLabel(ann)}
+                        </g>
+                      ))}
                     </svg>
                   )}
                 </div>
