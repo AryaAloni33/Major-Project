@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 /* Medical Web Application Design System */
 
 @layer base {
@@ -66,7 +68,7 @@
     /* Custom medical gradients */
     --gradient-primary: linear-gradient(135deg, hsl(168 76% 32%), hsl(180 60% 40%));
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 20% 98%));
-    
+
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(210 40% 11% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(210 40% 11% / 0.08), 0 2px 4px -2px hsl(210 40% 11% / 0.05);
@@ -121,7 +123,7 @@
 
     --gradient-primary: linear-gradient(135deg, hsl(168 65% 45%), hsl(180 50% 50%));
     --gradient-card: linear-gradient(180deg, hsl(210 25% 11%), hsl(210 25% 9%));
-    
+
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
     --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
     --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
@@ -136,11 +138,27 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Enhancing readability in light mode per user request */
+  :root:not(.dark) body {
+    font-weight: 500;
+    font-size: 15px;
+  }
+
+  :root:not(.dark) .text-sm {
+    font-weight: 500;
+  }
+
+  :root:not(.dark) .text-xs {
+    font-weight: 600;
   }
 }
 
 @layer utilities {
+
   /* Medical card styling */
   .medical-card {
     @apply bg-card rounded-lg border border-border;
@@ -192,29 +210,25 @@
   /* Moving gradient background - MUST be animated */
   .animated-gradient {
     @apply absolute inset-0;
-    background: linear-gradient(
-      120deg,
-      hsl(168 60% 92%) 0%,
-      hsl(190 50% 90%) 20%,
-      hsl(200 45% 93%) 40%,
-      hsl(175 55% 91%) 60%,
-      hsl(185 50% 94%) 80%,
-      hsl(168 60% 92%) 100%
-    );
+    background: linear-gradient(120deg,
+        hsl(168 60% 92%) 0%,
+        hsl(190 50% 90%) 20%,
+        hsl(200 45% 93%) 40%,
+        hsl(175 55% 91%) 60%,
+        hsl(185 50% 94%) 80%,
+        hsl(168 60% 92%) 100%);
     background-size: 300% 300%;
     animation: gradient-shift 15s ease infinite;
   }
 
   .dark .animated-gradient {
-    background: linear-gradient(
-      120deg,
-      hsl(210 30% 10%) 0%,
-      hsl(195 35% 12%) 20%,
-      hsl(180 30% 11%) 40%,
-      hsl(200 35% 13%) 60%,
-      hsl(215 30% 12%) 80%,
-      hsl(210 30% 10%) 100%
-    );
+    background: linear-gradient(120deg,
+        hsl(210 30% 10%) 0%,
+        hsl(195 35% 12%) 20%,
+        hsl(180 30% 11%) 40%,
+        hsl(200 35% 13%) 60%,
+        hsl(215 30% 12%) 80%,
+        hsl(210 30% 10%) 100%);
     background-size: 300% 300%;
   }
 
@@ -281,23 +295,25 @@
   /* Floating card effect */
   .floating-card {
     @apply backdrop-blur-sm;
-    box-shadow: 
+    box-shadow:
       0 4px 20px -4px hsl(210 40% 11% / 0.1),
       0 8px 32px -8px hsl(168 76% 32% / 0.08);
   }
 
   .dark .floating-card {
-    box-shadow: 
+    box-shadow:
       0 4px 20px -4px hsl(0 0% 0% / 0.4),
       0 8px 32px -8px hsl(168 65% 45% / 0.1);
   }
 
   /* Respect reduced motion */
   @media (prefers-reduced-motion: reduce) {
+
     .animated-blob,
     .animated-gradient {
       animation: none !important;
     }
+
     .animated-gradient {
       background-size: 100% 100%;
     }
@@ -309,15 +325,19 @@
   0% {
     background-position: 0% 0%;
   }
+
   25% {
     background-position: 100% 50%;
   }
+
   50% {
     background-position: 50% 100%;
   }
+
   75% {
     background-position: 0% 50%;
   }
+
   100% {
     background-position: 0% 0%;
   }
@@ -325,49 +345,76 @@
 
 /* Blob floating animations - pronounced movement */
 @keyframes blob-float-1 {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   25% {
     transform: translate(100px, 60px) scale(1.15);
   }
+
   50% {
     transform: translate(50px, 120px) scale(0.9);
   }
+
   75% {
     transform: translate(-50px, 80px) scale(1.1);
   }
 }
 
 @keyframes blob-float-2 {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   33% {
     transform: translate(-80px, 50px) scale(1.12);
   }
+
   66% {
     transform: translate(-40px, -80px) scale(0.88);
   }
 }
 
 @keyframes blob-float-3 {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   50% {
     transform: translate(100px, -80px) scale(1.18);
   }
 }
 
 @keyframes blob-float-4 {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   30% {
     transform: translate(-80px, -60px) scale(0.85);
   }
+
   70% {
     transform: translate(60px, 80px) scale(1.15);
   }
+}
+
+/* Hide number input spinners */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
 }
