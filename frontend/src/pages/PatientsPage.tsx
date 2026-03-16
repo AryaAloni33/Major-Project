@@ -101,9 +101,10 @@ export default function PatientsPage() {
     }
 
     try {
-      await patientsApi.create({ ...form, blood_type: normalizedBloodType });
+      const res = await patientsApi.create({ ...form, blood_type: normalizedBloodType });
       toast({ title: "Created", description: "Patient added successfully" });
       setShowForm(false);
+      setSearch(""); // Clear search filter to ensure the new patient is visible in the list
       setForm({
         name: "",
         age: 0,
@@ -114,6 +115,9 @@ export default function PatientsPage() {
         medical_history: "",
       });
       fetchPatients();
+      if (res.data.patient) {
+        setActivePatient(res.data.patient); // Auto-select the newly created patient
+      }
     } catch (err: any) {
       toast({
         title: "Error",
